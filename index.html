@@ -1,0 +1,699 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Simple Voting System</title>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --primary-hover: #1d4ed8;
+      --success: #16a34a;
+      --success-hover: #15803d;
+      --danger: #dc2626;
+      --danger-hover: #b91c1c;
+      --bg: #f8fafc;
+      --card-bg: #ffffff;
+      --border: #e2e8f0;
+      --text-main: #0f172a;
+      --text-muted: #64748b;
+      --highlight: #eff6ff;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    }
+
+    body {
+      background-color: var(--bg);
+      color: var(--text-main);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Top Navigation Bar */
+    header {
+      background: #1e293b;
+      color: #ffffff;
+      padding: 1.25rem 2rem;
+      box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .brand-icon {
+      font-size: 1.6rem;
+      background: #3b82f6;
+      width: 42px;
+      height: 42px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 8px;
+    }
+
+    .brand h1 {
+      font-size: 1.35rem;
+      font-weight: 700;
+      letter-spacing: -0.02em;
+    }
+
+    .brand p {
+      font-size: 0.8rem;
+      color: #94a3b8;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    .btn-secondary {
+      background: #334155;
+      color: #f1f5f9;
+      border: 1px solid #475569;
+      padding: 0.5rem 0.9rem;
+      border-radius: 6px;
+      font-size: 0.85rem;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background 0.15s ease;
+    }
+
+    .btn-secondary:hover {
+      background: #475569;
+    }
+
+    /* Main Container */
+    main {
+      flex: 1;
+      max-width: 1200px;
+      width: 100%;
+      margin: 2rem auto;
+      padding: 0 1.5rem;
+    }
+
+    /* Grid matching user table: 3 distinct functional columns */
+    .dashboard-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+      gap: 1.5rem;
+      align-items: start;
+    }
+
+    /* Card Panels */
+    .panel {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      box-shadow: 0 1px 3px 0 rgba(0, 0, 0, 0.05);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .panel-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--border);
+      background: #fafafa;
+    }
+
+    .panel-header h2 {
+      font-size: 1.1rem;
+      font-weight: 600;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .panel-header p {
+      font-size: 0.825rem;
+      color: var(--text-muted);
+      margin-top: 0.25rem;
+    }
+
+    .panel-body {
+      padding: 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 1.25rem;
+    }
+
+    /* Form Inputs */
+    .input-group {
+      display: flex;
+      gap: 0.5rem;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 0.65rem 0.85rem;
+      font-size: 0.95rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--primary);
+    }
+
+    .btn {
+      padding: 0.65rem 1.25rem;
+      font-size: 0.95rem;
+      font-weight: 600;
+      border-radius: 8px;
+      border: none;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 0.4rem;
+      transition: all 0.15s ease;
+    }
+
+    .btn-primary {
+      background: var(--primary);
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: var(--primary-hover);
+    }
+
+    .btn-success {
+      background: var(--success);
+      color: white;
+      width: 100%;
+      padding: 0.85rem;
+      font-size: 1rem;
+    }
+
+    .btn-success:hover {
+      background: var(--success-hover);
+    }
+
+    .btn-danger-outline {
+      background: transparent;
+      color: var(--danger);
+      border: 1px solid #fca5a5;
+      padding: 0.5rem 0.8rem;
+      font-size: 0.85rem;
+    }
+
+    .btn-danger-outline:hover {
+      background: #fef2f2;
+      border-color: var(--danger);
+    }
+
+    /* Candidates List in Column 1 */
+    .candidate-list {
+      list-style: none;
+      display: flex;
+      flex-direction: column;
+      gap: 0.5rem;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .candidate-chip {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 0.6rem 0.9rem;
+      background: #f8fafc;
+      border: 1px solid var(--border);
+      border-radius: 6px;
+      font-size: 0.9rem;
+    }
+
+    .delete-chip-btn {
+      background: none;
+      border: none;
+      color: #94a3b8;
+      cursor: pointer;
+      font-size: 1.1rem;
+      padding: 0 0.3rem;
+      border-radius: 4px;
+    }
+
+    .delete-chip-btn:hover {
+      color: var(--danger);
+      background: #fee2e2;
+    }
+
+    /* Voting Options in Column 2 */
+    .voting-options {
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+      max-height: 280px;
+      overflow-y: auto;
+    }
+
+    .vote-card {
+      display: flex;
+      align-items: center;
+      padding: 0.85rem 1rem;
+      border: 1.5px solid var(--border);
+      border-radius: 8px;
+      cursor: pointer;
+      transition: all 0.2s;
+      gap: 0.75rem;
+      background: white;
+    }
+
+    .vote-card:hover {
+      border-color: var(--primary);
+      background: #f0f7ff;
+    }
+
+    .vote-card.selected {
+      border-color: var(--primary);
+      background: var(--highlight);
+      font-weight: 600;
+    }
+
+    .vote-card input[type="radio"] {
+      width: 18px;
+      height: 18px;
+      accent-color: var(--primary);
+      cursor: pointer;
+    }
+
+    /* Results in Column 3 */
+    .winner-box {
+      background: #dcfce7;
+      border: 1px solid #86efac;
+      color: #14532d;
+      padding: 0.75rem 1rem;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 0.95rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .winner-box.tie {
+      background: #fef3c7;
+      border-color: #fde047;
+      color: #713f12;
+    }
+
+    .winner-box.none {
+      background: #f1f5f9;
+      border-color: #cbd5e1;
+      color: #475569;
+    }
+
+    .result-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.35rem;
+    }
+
+    .result-header {
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+    }
+
+    .result-name {
+      font-weight: 600;
+    }
+
+    .result-stats {
+      color: var(--text-muted);
+      font-size: 0.85rem;
+    }
+
+    .progress-bar-bg {
+      height: 12px;
+      background: #e2e8f0;
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .progress-bar-fill {
+      height: 100%;
+      background: var(--primary);
+      border-radius: 999px;
+      transition: width 0.4s ease;
+    }
+
+    .total-counter {
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--text-muted);
+    }
+
+    /* Alert / Notification Toast */
+    #toast {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      background: #1e293b;
+      color: white;
+      padding: 0.75rem 1.25rem;
+      border-radius: 8px;
+      font-size: 0.9rem;
+      box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.2);
+      transform: translateY(100px);
+      opacity: 0;
+      transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      z-index: 100;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    #toast.show {
+      transform: translateY(0);
+      opacity: 1;
+    }
+
+    /* Empty States */
+    .empty-state {
+      text-align: center;
+      padding: 1.5rem 0;
+      color: var(--text-muted);
+      font-size: 0.875rem;
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Top Header Banner -->
+  <header>
+    <div class="brand">
+      <div class="brand-icon">🗳️</div>
+      <div>
+        <h1>Simple Voting System</h1>
+        <p>Interactive Election & Poll Management</p>
+      </div>
+    </div>
+    <div class="header-actions">
+      <button class="btn-secondary" onclick="resetAllData()">🔄 Reset All</button>
+    </div>
+  </header>
+
+  <!-- Main 3-Column Layout -->
+  <main>
+    <div class="dashboard-grid">
+
+      <!-- Column 1: Add Candidates -->
+      <section class="panel">
+        <div class="panel-header">
+          <h2><span>➕</span> Add Candidates</h2>
+          <p>Enter candidate names to register them</p>
+        </div>
+        <div class="panel-body">
+          <form onsubmit="handleAddCandidate(event)" class="input-group">
+            <input type="text" id="candidateInput" placeholder="Enter candidate name..." required autocomplete="off" />
+            <button type="submit" class="btn btn-primary">Add</button>
+          </form>
+
+          <div>
+            <div style="font-size: 0.85rem; font-weight: 600; color: var(--text-muted); margin-bottom: 0.5rem;">
+              Registered Candidates (<span id="candidateCount">0</span>)
+            </div>
+            <ul id="candidateList" class="candidate-list"></ul>
+          </div>
+        </div>
+      </section>
+
+      <!-- Column 2: Vote -->
+      <section class="panel">
+        <div class="panel-header">
+          <h2><span>🗳️</span> Vote</h2>
+          <p>Cast a vote for your chosen candidate</p>
+        </div>
+        <div class="panel-body">
+          <div id="votingContainer" class="voting-options"></div>
+          <button type="button" class="btn btn-success" onclick="handleCastVote()">
+            Cast Vote
+          </button>
+        </div>
+      </section>
+
+      <!-- Column 3: Result -->
+      <section class="panel">
+        <div class="panel-header">
+          <h2><span>📊</span> Result</h2>
+          <p>Show vote count and live standings</p>
+        </div>
+        <div class="panel-body">
+          <div id="winnerBanner" class="winner-box none">
+            <span>ℹ️</span> No votes recorded yet
+          </div>
+
+          <div id="resultsContainer" style="display: flex; flex-direction: column; gap: 1rem;"></div>
+
+          <div class="total-counter">
+            <span>Total Votes Cast:</span>
+            <span id="totalVotes">0</span>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </main>
+
+  <!-- Toast Notification -->
+  <div id="toast"></div>
+
+  <script>
+    // State management with localStorage support
+    const STORAGE_KEY = "simple_voting_system_data";
+
+    let state = {
+      candidates: [
+        { id: "1", name: "Alice", votes: 0 },
+        { id: "2", name: "Bob", votes: 0 }
+      ],
+      selectedCandidateId: null
+    };
+
+    function loadState() {
+      const saved = localStorage.getItem(STORAGE_KEY);
+      if (saved) {
+        try {
+          const parsed = JSON.parse(saved);
+          if (Array.isArray(parsed.candidates)) {
+            state.candidates = parsed.candidates;
+          }
+        } catch (e) {
+          console.error("Failed to parse saved state", e);
+        }
+      }
+    }
+
+    function saveState() {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ candidates: state.candidates }));
+    }
+
+    function showToast(message, icon = "✅") {
+      const toast = document.getElementById("toast");
+      toast.innerHTML = `<span>${icon}</span> <span>${message}</span>`;
+      toast.className = "show";
+      setTimeout(() => {
+        toast.className = "";
+      }, 2600);
+    }
+
+    // 1. Candidate Management
+    function handleAddCandidate(e) {
+      e.preventDefault();
+      const input = document.getElementById("candidateInput");
+      const name = input.value.trim();
+
+      if (!name) return;
+
+      const exists = state.candidates.some(c => c.name.toLowerCase() === name.toLowerCase());
+      if (exists) {
+        showToast(`Candidate "${name}" already exists!`, "⚠️");
+        return;
+      }
+
+      state.candidates.push({
+        id: Date.now().toString(),
+        name: name,
+        votes: 0
+      });
+
+      input.value = "";
+      saveState();
+      renderAll();
+      showToast(`Added candidate "${name}"`);
+    }
+
+    function removeCandidate(id) {
+      const candidate = state.candidates.find(c => c.id === id);
+      if (!candidate) return;
+
+      if (confirm(`Remove candidate "${candidate.name}" and their votes?`)) {
+        state.candidates = state.candidates.filter(c => c.id !== id);
+        if (state.selectedCandidateId === id) {
+          state.selectedCandidateId = null;
+        }
+        saveState();
+        renderAll();
+        showToast(`Removed candidate "${candidate.name}"`, "🗑️");
+      }
+    }
+
+    // 2. Voting
+    function selectCandidate(id) {
+      state.selectedCandidateId = id;
+      renderVoting();
+    }
+
+    function handleCastVote() {
+      if (!state.selectedCandidateId) {
+        showToast("Please choose a candidate first!", "⚠️");
+        return;
+      }
+
+      const candidate = state.candidates.find(c => c.id === state.selectedCandidateId);
+      if (!candidate) {
+        showToast("Selected candidate was not found.", "❌");
+        return;
+      }
+
+      candidate.votes += 1;
+      saveState();
+      renderAll();
+      showToast(`Vote successfully cast for "${candidate.name}"!`, "🎉");
+    }
+
+    // 3. Reset
+    function resetAllData() {
+      if (confirm("Are you sure you want to reset all vote counts?")) {
+        state.candidates.forEach(c => c.votes = 0);
+        state.selectedCandidateId = null;
+        saveState();
+        renderAll();
+        showToast("All votes reset to zero.", "🔄");
+      }
+    }
+
+    // Render Views
+    function renderCandidatesList() {
+      const listEl = document.getElementById("candidateList");
+      const countEl = document.getElementById("candidateCount");
+      countEl.innerText = state.candidates.length;
+
+      if (state.candidates.length === 0) {
+        listEl.innerHTML = `<li class="empty-state">No candidates added yet.</li>`;
+        return;
+      }
+
+      listEl.innerHTML = state.candidates.map(c => `
+        <li class="candidate-chip">
+          <span><strong>${c.name}</strong></span>
+          <button class="delete-chip-btn" title="Remove" onclick="removeCandidate('${c.id}')">&times;</button>
+        </li>
+      `).join("");
+    }
+
+    function renderVoting() {
+      const container = document.getElementById("votingContainer");
+
+      if (state.candidates.length === 0) {
+        container.innerHTML = `<div class="empty-state">No candidates available to vote for. Please add candidates first.</div>`;
+        return;
+      }
+
+      container.innerHTML = state.candidates.map(c => {
+        const isSelected = state.selectedCandidateId === c.id;
+        return `
+          <label class="vote-card ${isSelected ? 'selected' : ''}" onclick="selectCandidate('${c.id}')">
+            <input type="radio" name="voteRadio" ${isSelected ? 'checked' : ''} />
+            <span style="font-size: 0.95rem;">${c.name}</span>
+          </label>
+        `;
+      }).join("");
+    }
+
+    function renderResults() {
+      const resultsContainer = document.getElementById("resultsContainer");
+      const winnerBanner = document.getElementById("winnerBanner");
+      const totalVotesEl = document.getElementById("totalVotes");
+
+      const totalVotes = state.candidates.reduce((sum, c) => sum + c.votes, 0);
+      totalVotesEl.innerText = totalVotes;
+
+      if (state.candidates.length === 0) {
+        winnerBanner.className = "winner-box none";
+        winnerBanner.innerHTML = "<span>ℹ️</span> No candidates registered";
+        resultsContainer.innerHTML = `<div class="empty-state">Add candidates to view results.</div>`;
+        return;
+      }
+
+      if (totalVotes === 0) {
+        winnerBanner.className = "winner-box none";
+        winnerBanner.innerHTML = "<span>ℹ️</span> No votes cast yet";
+      } else {
+        const maxVotes = Math.max(...state.candidates.map(c => c.votes));
+        const leaders = state.candidates.filter(c => c.votes === maxVotes && c.votes > 0);
+
+        if (leaders.length === 1) {
+          winnerBanner.className = "winner-box";
+          winnerBanner.innerHTML = `<span>👑</span> Winner: <strong>${leaders[0].name}</strong> with ${leaders[0].votes} vote(s)`;
+        } else if (leaders.length > 1) {
+          winnerBanner.className = "winner-box tie";
+          winnerBanner.innerHTML = `<span>🤝</span> Tie between: <strong>${leaders.map(l => l.name).join(", ")}</strong> (${maxVotes} votes each)`;
+        }
+      }
+
+      // Sort by vote count descending
+      const sorted = [...state.candidates].sort((a, b) => b.votes - a.votes);
+
+      resultsContainer.innerHTML = sorted.map(c => {
+        const pct = totalVotes > 0 ? ((c.votes / totalVotes) * 100).toFixed(1) : 0;
+        return `
+          <div class="result-item">
+            <div class="result-header">
+              <span class="result-name">${c.name}</span>
+              <span class="result-stats">${c.votes} votes (${pct}%)</span>
+            </div>
+            <div class="progress-bar-bg">
+              <div class="progress-bar-fill" style="width: ${pct}%"></div>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    function renderAll() {
+      renderCandidatesList();
+      renderVoting();
+      renderResults();
+    }
+
+    // Initialize
+    loadState();
+    renderAll();
+  </script>
+</body>
+</html>
